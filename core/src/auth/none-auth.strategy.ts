@@ -1,17 +1,17 @@
-import { RemoteAPI } from '../remote-api';
-import { APICall, PublicEndpointCallParams } from '../types';
-import { AuthStrategy } from './auth.strategy';
+import { Pluggable } from "../pluggable";
+import { APICall, PublicEndpointCallParams } from "../types";
+import { AuthStrategy } from "./auth.strategy";
 
 export class NoneAuthStrategy extends AuthStrategy {
-  execute(apiService: RemoteAPI, apiCall: APICall) {
+  execute(apiService: Pluggable, apiCall: APICall) {
     return apiCall;
   }
 
   async onApiError(
-    apiService: RemoteAPI,
+    apiService: Pluggable,
     endpointParams: PublicEndpointCallParams,
     apiCall: APICall,
-    error: any,
+    error: any
   ): Promise<boolean> {
     return true;
   }

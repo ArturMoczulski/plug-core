@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { AxiosResponse } from 'axios';
-import * as moment from 'moment';
-import { AuthStrategy } from '../auth/auth.strategy';
+import { Injectable } from "@nestjs/common";
+import { AxiosResponse } from "axios";
+import * as moment from "moment";
+import { AuthStrategy } from "../auth/auth.strategy";
 import {
   BearerTokenAuthParams,
   BearerTokenAuthStrategy,
-} from '../auth/bearer-token-auth.strategy';
-import { RefreshableBearerTokenAuthStrategy } from '../auth/refreshable-bearer-token-auth.strategy';
+} from "../auth/bearer-token-auth.strategy";
+import { RefreshableBearerTokenAuthStrategy } from "../auth/refreshable-bearer-token-auth.strategy";
 import {
   Auth,
   Delete,
@@ -15,17 +15,17 @@ import {
   Normalize,
   Patch,
   Post,
-} from '../decorators';
-import { HumanizedError, RemoteAPI } from '../remote-api';
+} from "../decorators";
+import { HumanizedError, Pluggable } from "../remote-api";
 import {
   APICall,
   Endpoint,
   EndpointCallParams,
   GuardedEndpointCallParams,
-} from '../types';
+} from "../types";
 
 @Injectable()
-export class RemoteAPITest extends RemoteAPI {
+export class RemoteAPITest extends Pluggable {
   protected verbose: boolean = false;
 
   humanizeError(error: any): HumanizedError {
@@ -33,7 +33,7 @@ export class RemoteAPITest extends RemoteAPI {
   }
 
   baseUrl(): string {
-    return 'http://testapi.com';
+    return "http://testapi.com";
   }
 
   override rateLimit() {
@@ -58,7 +58,7 @@ export class RemoteAPITest extends RemoteAPI {
         }) => {
           return {
             data: {
-              accessToken: '123',
+              accessToken: "123",
               expiresOn: moment().toDate().toString(),
             },
           } as AxiosResponse;
@@ -67,52 +67,52 @@ export class RemoteAPITest extends RemoteAPI {
     ];
   }
 
-  @Get('/get/empty')
+  @Get("/get/empty")
   async getEmpty(): Promise<void> {
     // Implementation handled by the decorator
     return;
   }
 
-  @Get<{ userId: string }>('/get/response')
+  @Get<{ userId: string }>("/get/response")
   async getResponse(): Promise<{ userId: string }> {
     // Implementation handled by the decorator
     return;
   }
 
-  @Get('/with-default-headers')
+  @Get("/with-default-headers")
   withDefaultHeaders() {
     return;
   }
 
-  @Get('/with-endpoint-headers')
+  @Get("/with-endpoint-headers")
   @Headers({
-    'my-header': 'test',
+    "my-header": "test",
   })
   withEndpointHeaders() {
     return;
   }
 
-  @Post<void, { payload: { text: string } }>('/post')
+  @Post<void, { payload: { text: string } }>("/post")
   postEndpoint(params: { payload: { text: string } }) {
     return;
   }
 
-  @Delete('/delete')
+  @Delete("/delete")
   delete() {
     return;
   }
 
-  @Patch('/update')
+  @Patch("/update")
   update() {
     return;
   }
 
-  @Get<void, { pathParams: { userId: string } }>('/users/:userId/details')
+  @Get<void, { pathParams: { userId: string } }>("/users/:userId/details")
   getUserDetails(params: { pathParams: { userId: string } }) {
     return;
   }
 
-  @Get('/search')
+  @Get("/search")
   search(query: any) {
     return;
   }
@@ -121,20 +121,20 @@ export class RemoteAPITest extends RemoteAPI {
     endpoint: Endpoint,
     params: any,
     apiCall: APICall,
-    authStrategy: AuthStrategy,
+    authStrategy: AuthStrategy
   ) {}
 
-  @Post('/token')
+  @Post("/token")
   @Normalize({
-    accessToken: 'tokens.access_token',
-    refreshToken: 'tokens.refresh_token',
+    accessToken: "tokens.access_token",
+    refreshToken: "tokens.refresh_token",
   })
   getToken() {
     return;
   }
 
-  @Post('/to-be-normalized')
-  @Normalize((api: RemoteAPI, params: EndpointCallParams, payload: any) => {
+  @Post("/to-be-normalized")
+  @Normalize((api: Pluggable, params: EndpointCallParams, payload: any) => {
     return {
       normalizedProperty: payload.property1,
       propertyFromContext: params.context.contextProperty,
@@ -144,16 +144,16 @@ export class RemoteAPITest extends RemoteAPI {
     return;
   }
 
-  @Get('/bearer-auth')
+  @Get("/bearer-auth")
   @Auth(AuthStrategy.Type.BEARER_TOKEN)
   bearerAuthEndpoint(params: GuardedEndpointCallParams<BearerTokenAuthParams>) {
     return;
   }
 
-  @Get('/refreshable-bearer-auth')
+  @Get("/refreshable-bearer-auth")
   @Auth(AuthStrategy.Type.REFRESHABLE_BEARER_TOKEN)
   refreshableBearerAuthEndpoint(
-    params: GuardedEndpointCallParams<BearerTokenAuthParams>,
+    params: GuardedEndpointCallParams<BearerTokenAuthParams>
   ) {
     return;
   }

@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AxiosError, AxiosResponse } from 'axios';
-import { format, parse } from 'date-fns';
-import { utcToZonedTime } from 'date-fns-tz';
-import { GaxiosError } from 'gaxios';
-import { gmail_v1, google } from 'googleapis';
-import * as _ from 'lodash';
+import { Injectable } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { AxiosError, AxiosResponse } from "axios";
+import { format, parse } from "date-fns";
+import { utcToZonedTime } from "date-fns-tz";
+import { GaxiosError } from "gaxios";
+import { gmail_v1, google } from "googleapis";
+import * as _ from "lodash";
 import {
   IEmailManagementAPI,
   IOAuthAPI,
@@ -14,17 +14,17 @@ import {
   SendEmailResult,
   SendProspectEmailParams,
   Thread,
-} from '../../../prospect-email-sending/providers/prospect-email-sending-provider';
-import { AuthStrategy } from '../auth/auth.strategy';
-import { Get, Normalize, Post } from '../decorators';
-import { AuthenticationFailed, InvalidAuthParams } from '../exceptions';
-import { HumanizedError, RemoteAPI } from '../remote-api';
+} from "../../../api/src/prospect-email-sending/providers/prospect-email-sending-provider";
+import { AuthStrategy } from "./auth/auth.strategy";
+import { Get, Normalize, Post } from "../decorators";
+import { AuthenticationFailed, InvalidAuthParams } from "../exceptions";
+import { HumanizedError, RemoteAPI } from "../remote-api";
 import {
   APICall,
   GuardedEndpointCallParams,
   PublicEndpointCallParams,
-} from '../types';
-import { EmailThreadNotFound } from '../../../prospect-email-sending/prospect-email-sending.service';
+} from "../types";
+import { EmailThreadNotFound } from "../../../api/src/prospect-email-sending/prospect-email-sending.service";
 
 @Injectable()
 export class GMailAPI
@@ -46,22 +46,22 @@ export class GMailAPI
     const oauth2Client = new google.auth.OAuth2(
       process.env.SCOUT_API_GOOGLE_CLIENT_ID,
       process.env.SCOUT_API_GOOGLE_CLIENT_SECRET,
-      GMailAPI.redirectUrl(),
+      GMailAPI.redirectUrl()
     );
 
     const authUrl = oauth2Client.generateAuthUrl({
       // 'online' (default) or 'offline' (gets refresh_token)
-      access_type: 'offline',
+      access_type: "offline",
 
       // If you only need one scope you can pass it as a string
       scope: [
-        'https://www.googleapis.com/auth/gmail.send',
-        'https://www.googleapis.com/auth/gmail.readonly',
-        'https://www.googleapis.com/auth/userinfo.email',
+        "https://www.googleapis.com/auth/gmail.send",
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/userinfo.email",
       ],
       include_granted_scopes: true,
       state,
-      prompt: 'consent',
+      prompt: "consent",
     });
 
     return authUrl;
@@ -81,12 +81,12 @@ export class GMailAPI
   @Post<
     Promise<AxiosResponse<SendEmailResult>>,
     GMailAPI.UsersMesssagesSendParams
-  >('/users/:userId/messages/send')
+  >("/users/:userId/messages/send")
   @Normalize({
-    threadId: 'id',
+    threadId: "id",
   })
   async startThread(
-    params: GMailAPI.UsersMesssagesSendParams,
+    params: GMailAPI.UsersMesssagesSendParams
   ): Promise<AxiosResponse<SendEmailResult>> {
     return;
   }
@@ -94,10 +94,10 @@ export class GMailAPI
   protected async doStartThread(
     gmail: gmail_v1.Gmail,
     params: GMailAPI.UsersMesssagesSendParams,
-    apiCall: APICall<GMailAPI.UsersMessagesSendPayload, SendEmailResult>,
+    apiCall: APICall<GMailAPI.UsersMessagesSendPayload, SendEmailResult>
   ): Promise<AxiosResponse<SendEmailResult>> {
     return (await gmail.users.messages.send({
-      userId: 'me',
+      userId: "me",
       requestBody: apiCall.request.payload,
     })) as AxiosResponse<SendEmailResult>;
   }
@@ -105,9 +105,9 @@ export class GMailAPI
   @Post<
     Promise<AxiosResponse<SendEmailResult>>,
     GMailAPI.UsersMesssagesReplyToThreadParams
-  >('/users/:userId/messages/send')
+  >("/users/:userId/messages/send")
   async replyToThread(
-    params: GMailAPI.UsersMesssagesReplyToThreadParams,
+    params: GMailAPI.UsersMesssagesReplyToThreadParams
   ): Promise<AxiosResponse<SendEmailResult>> {
     return;
   }
@@ -118,10 +118,10 @@ export class GMailAPI
     apiCall: APICall<
       GMailAPI.UsersMessagesReplyToThreadPayload,
       SendEmailResult
-    >,
+    >
   ): Promise<AxiosResponse<SendEmailResult>> {
     return (await gmail.users.messages.send({
-      userId: 'me',
+      userId: "me",
       requestBody: apiCall.request.payload,
     })) as AxiosResponse<SendEmailResult>;
   }
@@ -129,9 +129,9 @@ export class GMailAPI
   @Post<
     Promise<AxiosResponse<GMailAPI.UsersWatchResponse>>,
     GMailAPI.UsersWatchParams
-  >('/users/:userId/watch')
+  >("/users/:userId/watch")
   async watch(
-    params: GMailAPI.UsersWatchParams,
+    params: GMailAPI.UsersWatchParams
   ): Promise<AxiosResponse<GMailAPI.UsersWatchResponse>> {
     return;
   }
@@ -139,20 +139,20 @@ export class GMailAPI
   protected async doWatch(
     gmail: gmail_v1.Gmail,
     params: GMailAPI.UsersWatchParams,
-    apiCall: APICall<GMailAPI.UsersWatchPayload, GMailAPI.UsersWatchResponse>,
+    apiCall: APICall<GMailAPI.UsersWatchPayload, GMailAPI.UsersWatchResponse>
   ): Promise<AxiosResponse<GMailAPI.UsersWatchResponse>> {
     return (await gmail.users.watch({
-      userId: 'me',
+      userId: "me",
       ...apiCall.request.payload,
     })) as AxiosResponse<GMailAPI.UsersWatchResponse>;
   }
 
   @Get<Promise<AxiosResponse<Thread>>, GMailAPI.UsersThreadParams>(
-    '/users/:userId/threads/:threadId',
+    "/users/:userId/threads/:threadId"
   )
   @Normalize(GMailAPI.normalizeThreadMessages)
   async thread(
-    params: GMailAPI.UsersThreadParams,
+    params: GMailAPI.UsersThreadParams
   ): Promise<AxiosResponse<Thread>> {
     return;
   }
@@ -160,7 +160,7 @@ export class GMailAPI
   protected async doThread(
     gmail: gmail_v1.Gmail,
     params: GMailAPI.UsersThreadParams,
-    apiCall: APICall<never, Thread>,
+    apiCall: APICall<never, Thread>
   ): Promise<AxiosResponse<Thread>> {
     const getThreadParams = params as GMailAPI.UsersThreadParams;
     const gaxios = (await gmail.users.threads.get({
@@ -182,10 +182,10 @@ export class GMailAPI
   @Get<
     Promise<AxiosResponse<GMailAPI.GmailMessage>>,
     GMailAPI.UsersMessageParams
-  >('/users/:userId/messages/:messageId')
+  >("/users/:userId/messages/:messageId")
   @Normalize(GMailAPI.normalizeMessage)
   async message(
-    params: GMailAPI.UsersMessageParams,
+    params: GMailAPI.UsersMessageParams
   ): Promise<AxiosResponse<GMailAPI.GmailMessage>> {
     return;
   }
@@ -193,7 +193,7 @@ export class GMailAPI
   protected async doMessage(
     gmail: gmail_v1.Gmail,
     params: GMailAPI.UsersMessageParams,
-    apiCall: APICall<never, GMailAPI.UsersMessageResponse>,
+    apiCall: APICall<never, GMailAPI.UsersMessageResponse>
   ): Promise<AxiosResponse<GMailAPI.GmailMessage>> {
     return (await gmail.users.messages.get({
       userId: params.pathParams.userId,
@@ -204,34 +204,34 @@ export class GMailAPI
   protected static normalizeMessage(
     api: GMailAPI,
     params: GMailAPI.UsersMessageParams,
-    message: GMailAPI.UsersMessageResponse,
+    message: GMailAPI.UsersMessageResponse
   ): GMailAPI.GmailMessage {
     const defaultTimezone = `America/Los_Angeles`;
 
-    let body = '';
+    let body = "";
 
     if (message.payload.parts) {
       const obtainBody = (part: gmail_v1.Schema$MessagePart) => {
         let res: string;
         try {
-          res = Buffer.from(part.body.data, 'base64').toString();
+          res = Buffer.from(part.body.data, "base64").toString();
         } catch {
-          res = '';
+          res = "";
         }
 
         if (part.parts) {
-          res += res + part.parts.flatMap((p) => obtainBody(p)).join('');
+          res += res + part.parts.flatMap((p) => obtainBody(p)).join("");
         }
         return res;
       };
-      body = message.payload.parts.map((part) => obtainBody(part)).join('');
+      body = message.payload.parts.map((part) => obtainBody(part)).join("");
     } else if (message.payload.body.data) {
-      body = Buffer.from(message.payload.body.data, 'base64').toString();
+      body = Buffer.from(message.payload.body.data, "base64").toString();
       try {
-        body = Buffer.from(message.payload.body.data, 'base64').toString();
+        body = Buffer.from(message.payload.body.data, "base64").toString();
       } catch (err) {
-        console.error('Error occuring when no parts is present', err);
-        body = '';
+        console.error("Error occuring when no parts is present", err);
+        body = "";
       }
     }
 
@@ -248,15 +248,15 @@ export class GMailAPI
       const textBefore = input.substring(0, startIndex).trim();
 
       const htmlContent =
-        htmlStartIndex === -1 ? '' : input.substring(htmlStartIndex);
+        htmlStartIndex === -1 ? "" : input.substring(htmlStartIndex);
 
       return `${textBefore}\n${htmlContent}`;
     };
 
     const headers = message.payload.headers;
 
-    const dateHeader = headers.find((header) => header.name === 'Date')?.value;
-    const fromHeader = headers.find((header) => header.name === 'From')?.value;
+    const dateHeader = headers.find((header) => header.name === "Date")?.value;
+    const fromHeader = headers.find((header) => header.name === "From")?.value;
 
     const regex = /<([^>]+)>/;
     const match = fromHeader.match(regex);
@@ -264,29 +264,29 @@ export class GMailAPI
     const regexName = /^(.*?)\s*</;
     const matchHeader = fromHeader.match(regexName);
 
-    const fromName = matchHeader ? matchHeader[1].trim() : '';
+    const fromName = matchHeader ? matchHeader[1].trim() : "";
 
-    let fromEmail = '';
+    let fromEmail = "";
     if (match) {
       fromEmail = match[1];
     }
 
     const referencesHeader = headers.find(
-      (header) => header.name === 'References',
+      (header) => header.name === "References"
     )?.value;
 
-    let formattedDate = '';
+    let formattedDate = "";
     if (dateHeader) {
-      const cleanedDateHeader = dateHeader.replace(/\s*\(.*?\)$/, '');
+      const cleanedDateHeader = dateHeader.replace(/\s*\(.*?\)$/, "");
 
       const parsedDate = parse(
         cleanedDateHeader,
-        'E, d MMM yyyy HH:mm:ss X',
-        new Date(),
+        "E, d MMM yyyy HH:mm:ss X",
+        new Date()
       );
       formattedDate = format(
         utcToZonedTime(parsedDate, params.context?.timezone || defaultTimezone),
-        "E, MMM d, yyyy 'at' h:mm a",
+        "E, MMM d, yyyy 'at' h:mm a"
       );
 
       /**
@@ -320,9 +320,9 @@ export class GMailAPI
   @Get<
     Promise<AxiosResponse<GMailAPI.UsersHistoryListResponse>>,
     GMailAPI.UsersHistoryListParams
-  >('/users/:userId/history')
+  >("/users/:userId/history")
   async historyList(
-    params: GMailAPI.UsersHistoryListParams,
+    params: GMailAPI.UsersHistoryListParams
   ): Promise<AxiosResponse<GMailAPI.UsersHistoryListResponse>> {
     return;
   }
@@ -330,7 +330,7 @@ export class GMailAPI
   protected async doHistoryList(
     gmail: gmail_v1.Gmail,
     params: GMailAPI.UsersHistoryListParams,
-    apiCall: APICall<never, GMailAPI.UsersHistoryListResponse>,
+    apiCall: APICall<never, GMailAPI.UsersHistoryListResponse>
   ): Promise<AxiosResponse<GMailAPI.UsersHistoryListResponse>> {
     return (await gmail.users.history.list({
       userId: params.pathParams.userId,
@@ -341,7 +341,7 @@ export class GMailAPI
   }
 
   @Post<Promise<AxiosResponse<void>>, GMailAPI.UsersStopParams>(
-    '/users/:userId/stop',
+    "/users/:userId/stop"
   )
   async stop(params: GMailAPI.UsersStopParams): Promise<AxiosResponse<void>> {
     return;
@@ -350,7 +350,7 @@ export class GMailAPI
   protected async doStop(
     gmail: gmail_v1.Gmail,
     params: GMailAPI.UsersStopParams,
-    apiCall: APICall<never, never>,
+    apiCall: APICall<never, never>
   ): Promise<AxiosResponse<never>> {
     return (await gmail.users.stop({
       userId: params.pathParams.userId,
@@ -377,38 +377,37 @@ export class GMailAPI
       PayloadType,
       any
     >,
-    apiCall: APICall<PayloadType, ResponseType, any>,
+    apiCall: APICall<PayloadType, ResponseType, any>
   ): Promise<AxiosResponse<ResponseType>> {
     if (!this.dryRun) {
       const gmail = this.gmailSDK(endpointParams, apiCall);
 
       // This is jush for reference and debugging. The GMail SDK client
       // takes care of this on it's own
-      apiCall.request.headers[
-        'Authorization'
-      ] = `Bearer ${endpointParams.auth.accessToken}`;
+      apiCall.request.headers["Authorization"] =
+        `Bearer ${endpointParams.auth.accessToken}`;
 
       const implementationMethodName = `do${_.upperFirst(
-        apiCall.endpoint.name,
+        apiCall.endpoint.name
       )}`;
 
       if (
         !this[implementationMethodName] ||
-        typeof this[implementationMethodName] !== 'function'
+        typeof this[implementationMethodName] !== "function"
       ) {
         throw new Error(
-          `Endpoint ${this.constructor.name}.${apiCall.endpoint.name} defined but the implementation method ${implementationMethodName} seems to be missing. Make sure that every defined endpoint in GMailAPI has a matching do{endpointName} method to call the appropriate functions of the Gmail client.`,
+          `Endpoint ${this.constructor.name}.${apiCall.endpoint.name} defined but the implementation method ${implementationMethodName} seems to be missing. Make sure that every defined endpoint in GMailAPI has a matching do{endpointName} method to call the appropriate functions of the Gmail client.`
         );
       }
 
       return await this[implementationMethodName](
         gmail,
         endpointParams,
-        apiCall,
+        apiCall
       );
     } else {
       this.logger.warn(
-        `GmailService running in dry run mode... the Gmail send API request was skipped.`,
+        `GmailService running in dry run mode... the Gmail send API request was skipped.`
       );
     }
   }
@@ -420,7 +419,7 @@ export class GMailAPI
       PayloadType,
       any
     >,
-    apiCall: APICall<PayloadType, ResponseType, GMailAPI.AuthParams>,
+    apiCall: APICall<PayloadType, ResponseType, GMailAPI.AuthParams>
   ) {
     if (
       !apiCall.request.auth.accessToken ||
@@ -432,7 +431,7 @@ export class GMailAPI
     const oAuth2Client = new google.auth.OAuth2(
       process.env.SCOUT_API_GOOGLE_CLIENT_ID,
       process.env.SCOUT_API_GOOGLE_CLIENT_SECRET,
-      process.env.SCOUT_API_GOOGLE_CALLBACK_URL,
+      process.env.SCOUT_API_GOOGLE_CALLBACK_URL
     );
 
     oAuth2Client.setCredentials({
@@ -440,7 +439,7 @@ export class GMailAPI
       refresh_token: apiCall.request.auth.refreshToken,
     });
 
-    oAuth2Client.on('tokens', (tokens) => {
+    oAuth2Client.on("tokens", (tokens) => {
       this.eventEmitter.emit(GMailAPI.Events.Tokens, {
         params: callParams,
         apiCall,
@@ -458,10 +457,10 @@ export class GMailAPI
       PayloadType,
       any
     >,
-    apiCall: APICall<PayloadType, ResponseType, GMailAPI.AuthParams>,
+    apiCall: APICall<PayloadType, ResponseType, GMailAPI.AuthParams>
   ) {
     const gmail = google.gmail({
-      version: 'v1',
+      version: "v1",
       auth: this.oAuthClient(callParams, apiCall),
     });
 
@@ -475,7 +474,7 @@ export class GMailAPI
   baseUrl(): string {
     // base url from here is not really used, as the
     // implementation uses GMail client anyway
-    return 'https://gmail.googleapis.com/gmail/v1';
+    return "https://gmail.googleapis.com/gmail/v1";
   }
 
   /**
@@ -494,7 +493,7 @@ export class GMailAPI
 
   isAuthError<PayloadType, ResponseType, AuthParamsType>(
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: GaxiosError,
+    error: GaxiosError
   ): boolean {
     if (error.response.data.error == `invalid_grant`) {
       return true;
@@ -506,7 +505,7 @@ export class GMailAPI
     authStrategy: AuthStrategy,
     endpointParams: PublicEndpointCallParams,
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: GaxiosError,
+    error: GaxiosError
   ): boolean {
     throw new AuthenticationFailed(
       apiService,
@@ -514,7 +513,7 @@ export class GMailAPI
       endpointParams,
       apiCall,
       error,
-      `Authentication failed: ${error.response.data.error} ${error.response.data.error_description}`,
+      `Authentication failed: ${error.response.data.error} ${error.response.data.error_description}`
     );
   }
 
@@ -526,13 +525,13 @@ export class GMailAPI
     endpointParams: PublicEndpointCallParams,
     authStrategy: AuthStrategy,
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: any,
+    error: any
   ): boolean {
     if (this.isAuthError(apiCall, error)) {
       this.onAuthError(this, authStrategy, endpointParams, apiCall, error);
     }
 
-    if (error.response?.data?.error?.status === 'NOT_FOUND') {
+    if (error.response?.data?.error?.status === "NOT_FOUND") {
       throw new EmailThreadNotFound();
     }
 
@@ -541,33 +540,32 @@ export class GMailAPI
 
   override isApiError(error: any) {
     return (
-      typeof error === 'object' &&
+      typeof error === "object" &&
       error !== null &&
-      'response' in error &&
+      "response" in error &&
       error.response &&
-      'data' in error.response &&
+      "data" in error.response &&
       error.response.data &&
-      'error' in error.response.data
+      "error" in error.response.data
     );
   }
 
   protected override logApiError<PayloadType, ResponseType, AuthParamsType>(
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: AxiosError,
+    error: AxiosError
   ): void {
     this.logger.error(
-      `🔌❌ ${this.dryRun ? '(dry run)' : ''} ${apiCall}\n\n` +
-        `API error: ${error.response?.status} ${
-          error.response?.statusText
-        }\n${JSON.stringify(error.response?.data, null, 2)}\n\n` +
-        `Stack:\n${error.stack}`,
+      `🔌❌ ${this.dryRun ? "(dry run)" : ""} ${apiCall}\n\n` +
+        `API error: ${error.response?.status} ${error.response
+          ?.statusText}\n${JSON.stringify(error.response?.data, null, 2)}\n\n` +
+        `Stack:\n${error.stack}`
     );
   }
 
   protected static normalizeThreadMessages(
     api: GMailAPI,
     params: GMailAPI.UsersThreadParams,
-    payload: GMailAPI.UsersThreadResponse,
+    payload: GMailAPI.UsersThreadResponse
   ): Thread {
     const messages = payload.messages;
 
@@ -577,13 +575,13 @@ export class GMailAPI
 
         const content = contentParts
           .map((part) => GMailAPI.decodeBase64(part.body.data))
-          .join('\n');
+          .join("\n");
         const cleanedContent = GMailAPI.cleanEmailContent(content);
 
         const headers = msg.payload.headers;
-        const fromHeader = headers.find((header) => header.name === 'From');
+        const fromHeader = headers.find((header) => header.name === "From");
         const [senderName, senderEmail] = GMailAPI.parseSenderInfo(
-          fromHeader ? fromHeader.value : 'Unknown',
+          fromHeader ? fromHeader.value : "Unknown"
         );
 
         return {
@@ -600,11 +598,11 @@ export class GMailAPI
   protected static extractContentParts(part, contentParts = []) {
     if (part.parts) {
       part.parts.forEach((subPart) =>
-        GMailAPI.extractContentParts(subPart, contentParts),
+        GMailAPI.extractContentParts(subPart, contentParts)
       );
     } else if (
-      part.mimeType === 'text/plain' ||
-      part.mimeType === 'text/html'
+      part.mimeType === "text/plain" ||
+      part.mimeType === "text/html"
     ) {
       contentParts.push(part);
     }
@@ -612,30 +610,30 @@ export class GMailAPI
   }
 
   protected static parseSenderInfo(senderInfo) {
-    const senderParts = senderInfo.split(' ');
-    const email = senderParts.pop().replace(/[<>]/g, '');
-    const name = senderParts.join(' ').trim();
+    const senderParts = senderInfo.split(" ");
+    const email = senderParts.pop().replace(/[<>]/g, "");
+    const name = senderParts.join(" ").trim();
 
     return [name, email];
   }
 
   protected static decodeBase64(encodedData) {
     if (!encodedData) {
-      return '';
+      return "";
     }
-    return Buffer.from(encodedData, 'base64').toString('utf8');
+    return Buffer.from(encodedData, "base64").toString("utf8");
   }
 
   protected static cleanEmailContent(content) {
     let text = GMailAPI.stripHtmlTags(content);
     const nestedReplyPattern = /On\s.*?\swrote:.*?(?=(On\s.*?\swrote:|$))/gs;
-    text = text.replace(nestedReplyPattern, '');
+    text = text.replace(nestedReplyPattern, "");
     text = GMailAPI.removeSignature(text);
     return text.trim();
   }
 
   protected static removeSignature(text) {
-    const signatureIndex = text.indexOf('\n--\n');
+    const signatureIndex = text.indexOf("\n--\n");
     if (signatureIndex !== -1) {
       return text.substring(0, signatureIndex);
     }
@@ -643,21 +641,21 @@ export class GMailAPI
   }
 
   protected static stripHtmlTags(html) {
-    return html.replace(/<img[^>]*>/gm, '');
+    return html.replace(/<img[^>]*>/gm, "");
   }
 
   protected removeQuotedText(text) {
-    return text.replace(/^>.*$/gm, ''); // Simple quoted text remover
+    return text.replace(/^>.*$/gm, ""); // Simple quoted text remover
   }
 
   protected extractContentParts(part, contentParts = []) {
     if (part.parts) {
       part.parts.forEach((subPart) =>
-        this.extractContentParts(subPart, contentParts),
+        this.extractContentParts(subPart, contentParts)
       );
     } else if (
-      part.mimeType === 'text/plain' ||
-      part.mimeType === 'text/html'
+      part.mimeType === "text/plain" ||
+      part.mimeType === "text/html"
     ) {
       contentParts.push(part);
     }
@@ -665,18 +663,18 @@ export class GMailAPI
   }
 
   protected parseSenderInfo(senderInfo) {
-    const senderParts = senderInfo.split(' ');
-    const email = senderParts.pop().replace(/[<>]/g, '');
-    const name = senderParts.join(' ').trim();
+    const senderParts = senderInfo.split(" ");
+    const email = senderParts.pop().replace(/[<>]/g, "");
+    const name = senderParts.join(" ").trim();
 
     return [name, email];
   }
 
   protected decodeBase64(encodedData) {
     if (!encodedData) {
-      return '';
+      return "";
     }
-    return Buffer.from(encodedData, 'base64').toString('utf8');
+    return Buffer.from(encodedData, "base64").toString("utf8");
   }
 }
 
@@ -710,7 +708,7 @@ export namespace GMailAPI {
       UsersMessagesSendPayload, // payload
       UsersMesssagesSendContext // context
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       userId: string;
@@ -730,7 +728,7 @@ export namespace GMailAPI {
       UsersMessagesReplyToThreadPayload, // payload
       UsersMesssagesSendContext // context
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       userId: string;
@@ -749,7 +747,7 @@ export namespace GMailAPI {
       UsersWatchPayload,
       any // context
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       userId: string;
@@ -758,7 +756,7 @@ export namespace GMailAPI {
 
   export type UsersWatchPayload = {
     labelIds?: string[];
-    labelFilterBehavior: 'include' | 'exclude';
+    labelFilterBehavior: "include" | "exclude";
     topicName: string;
   };
 
@@ -771,13 +769,13 @@ export namespace GMailAPI {
     GuardedGmailEndpointCallParams<
       undefined, // overwrite path params type to make it required
       {
-        format?: 'full' | 'metadata' | 'minimal';
+        format?: "full" | "metadata" | "minimal";
         metadataHeaders?: string[];
       }, // query params
       never,
       any // context
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       userId: string;
@@ -791,13 +789,13 @@ export namespace GMailAPI {
     GuardedGmailEndpointCallParams<
       undefined, // overwrite path params type to make it required
       {
-        format?: 'full' | 'metadata' | 'minimal';
+        format?: "full" | "metadata" | "minimal";
         metadataHeaders?: string[];
       }, // query params
       never,
       any // context
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       userId: string;
@@ -814,7 +812,7 @@ export namespace GMailAPI {
       never, // no payload
       any // context
     >,
-    'pathParams' | 'query'
+    "pathParams" | "query"
   > & {
     pathParams: {
       userId: string;
@@ -825,10 +823,10 @@ export namespace GMailAPI {
       startHistoryId: string;
       labelId?: string;
       historyTypes?: (
-        | 'messageAdded'
-        | 'messageDeleted'
-        | 'labelAdded'
-        | 'labelRemoved'
+        | "messageAdded"
+        | "messageDeleted"
+        | "labelAdded"
+        | "labelRemoved"
       )[];
     }; // query params
   };
@@ -846,7 +844,7 @@ export namespace GMailAPI {
       never, // payload
       any // context
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       userId: string;

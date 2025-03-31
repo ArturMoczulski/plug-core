@@ -1,13 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Logger } from '@nestjs/common';
-import { HumanizedError } from '../remote-api';
-import { GMailAPI } from './gmail-api';
-import { faker } from '@faker-js/faker';
-import { AuthenticationFailed, InvalidAuthParams } from '../exceptions';
-import { AuthStrategy } from '../auth/auth.strategy';
+import { Test, TestingModule } from "@nestjs/testing";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { Logger } from "@nestjs/common";
+import { HumanizedError } from "../remote-api";
+import { GMailAPI } from "../apis/gmail-api";
+import { faker } from "@faker-js/faker";
+import { AuthenticationFailed, InvalidAuthParams } from "../exceptions";
+import { AuthStrategy } from "../auth/auth.strategy";
 
-describe('GMailAPI', () => {
+describe("GMailAPI", () => {
   let gmailApi: GMailAPI;
   let gmailClient: {
     users: {
@@ -77,120 +77,120 @@ describe('GMailAPI', () => {
         }),
       },
     };
-    gmailApi['gmailSDK'] = jest.fn().mockReturnValue(gmailClient);
+    gmailApi["gmailSDK"] = jest.fn().mockReturnValue(gmailClient);
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('Initialization', () => {
-    it('should be defined', () => {
+  describe("Initialization", () => {
+    it("should be defined", () => {
       expect(gmailApi).toBeDefined();
     });
   });
 
-  describe('Configuration Methods', () => {
-    it('should return the correct baseUrl', () => {
+  describe("Configuration Methods", () => {
+    it("should return the correct baseUrl", () => {
       expect(gmailApi.baseUrl()).toBe(
-        'https://gmail.googleapis.com/upload/gmail/v1',
+        "https://gmail.googleapis.com/upload/gmail/v1"
       );
     });
 
-    it('should return the correct rate limit', () => {
+    it("should return the correct rate limit", () => {
       expect(gmailApi.rateLimit()).toBe(1000);
     });
 
-    it('should return the correct rate limit window length', () => {
+    it("should return the correct rate limit window length", () => {
       expect(gmailApi.rateLimitWindowLength()).toBe(10 * 1000);
     });
   });
 
-  describe('Error Handling', () => {
+  describe("Error Handling", () => {
     const invalidGrantError = {
       config: {
-        method: 'POST',
-        url: 'https://oauth2.googleapis.com/token',
-        data: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+        method: "POST",
+        url: "https://oauth2.googleapis.com/token",
+        data: "<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.",
         headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'User-Agent': 'google-api-nodejs-client/9.2.0',
-          'x-goog-api-client': 'gl-node/20.2.0',
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": "google-api-nodejs-client/9.2.0",
+          "x-goog-api-client": "gl-node/20.2.0",
         },
-        body: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
-        responseType: 'unknown',
+        body: "<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.",
+        responseType: "unknown",
       },
       response: {
         config: {
-          method: 'POST',
-          url: 'https://oauth2.googleapis.com/token',
-          data: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
+          method: "POST",
+          url: "https://oauth2.googleapis.com/token",
+          data: "<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.",
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'User-Agent': 'google-api-nodejs-client/9.2.0',
-            'x-goog-api-client': 'gl-node/20.2.0',
+            "Content-Type": "application/x-www-form-urlencoded",
+            "User-Agent": "google-api-nodejs-client/9.2.0",
+            "x-goog-api-client": "gl-node/20.2.0",
           },
-          body: '<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.',
-          responseType: 'unknown',
+          body: "<<REDACTED> - See `errorRedactor` option in `gaxios` for configuration>.",
+          responseType: "unknown",
         },
         data: {
-          error: 'invalid_grant',
-          error_description: 'Bad Request',
+          error: "invalid_grant",
+          error_description: "Bad Request",
         },
         headers: {
-          'alt-svc': 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
-          'cache-control': 'no-cache, no-store, max-age=0, must-revalidate',
-          'content-encoding': 'gzip',
-          'content-type': 'application/json; charset=utf-8',
-          date: 'Wed, 18 Dec 2024 11:46:11 GMT',
-          expires: 'Mon, 01 Jan 1990 00:00:00 GMT',
-          pragma: 'no-cache',
-          server: 'scaffolding on HTTPServer2',
-          'transfer-encoding': 'chunked',
-          vary: 'Origin, X-Origin, Referer',
-          'x-content-type-options': 'nosniff',
-          'x-frame-options': 'SAMEORIGIN',
-          'x-xss-protection': '0',
+          "alt-svc": 'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000',
+          "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+          "content-encoding": "gzip",
+          "content-type": "application/json; charset=utf-8",
+          date: "Wed, 18 Dec 2024 11:46:11 GMT",
+          expires: "Mon, 01 Jan 1990 00:00:00 GMT",
+          pragma: "no-cache",
+          server: "scaffolding on HTTPServer2",
+          "transfer-encoding": "chunked",
+          vary: "Origin, X-Origin, Referer",
+          "x-content-type-options": "nosniff",
+          "x-frame-options": "SAMEORIGIN",
+          "x-xss-protection": "0",
         },
         status: 400,
-        statusText: 'Bad Request',
+        statusText: "Bad Request",
         request: {
-          responseURL: 'https://oauth2.googleapis.com/token',
+          responseURL: "https://oauth2.googleapis.com/token",
         },
       },
       status: 400,
     };
 
-    describe('isApiError', () => {
-      it('should recognize the error as an API error', async () => {
+    describe("isApiError", () => {
+      it("should recognize the error as an API error", async () => {
         expect(gmailApi.isApiError(invalidGrantError)).toBe(true);
       });
 
-      describe('on invalid_grant', () => {
+      describe("on invalid_grant", () => {
         beforeEach(() => {
           gmailClient.users.threads.get.mockRejectedValueOnce(
-            invalidGrantError,
+            invalidGrantError
           );
         });
 
-        it('shoulh throw AuthenticationFailed', async () => {
+        it("shoulh throw AuthenticationFailed", async () => {
           await expect(
             gmailApi.thread({
               auth: {
-                accessToken: 'none',
-                refreshToken: 'none',
+                accessToken: "none",
+                refreshToken: "none",
               },
               pathParams: {
-                userId: 'me',
-                threadId: '123',
+                userId: "me",
+                threadId: "123",
               },
-            }),
+            })
           ).rejects.toThrow(AuthenticationFailed);
         });
       });
     });
 
-    describe('humanizeError', () => {
+    describe("humanizeError", () => {
       describe(`for AuthenticationFailed error`, () => {
         let error: AuthenticationFailed;
         beforeEach(() => {
@@ -199,15 +199,15 @@ describe('GMailAPI', () => {
             {} as any,
             {},
             {} as any,
-            {},
+            {}
           );
         });
 
-        it('should humanize the error', () => {
+        it("should humanize the error", () => {
           const result = gmailApi.humanizeError(error);
           expect(result.title).toEqual(`GMail account access denied`);
           expect(result.detail).toEqual(
-            `Looks like your Gmail account authorization is expired or was never established. Please, reconnect your Gmail Account.`,
+            `Looks like your Gmail account authorization is expired or was never established. Please, reconnect your Gmail Account.`
           );
         });
       });
@@ -219,17 +219,17 @@ describe('GMailAPI', () => {
           error = new InvalidAuthParams<GMailAPI.AuthParams>(
             gmailApi,
             {} as any,
-            {} as any,
+            {} as any
           );
         });
 
-        it('should humanize the error', () => {
+        it("should humanize the error", () => {
           const result = gmailApi.humanizeError(error);
           expect(result.title).toEqual(
-            `Your GMail account credentials are incorrect or missing`,
+            `Your GMail account credentials are incorrect or missing`
           );
           expect(result.detail).toEqual(
-            `Sorry, this should have not happened and is probably a problem on our side. Please, report the issue to Scout's customer service.`,
+            `Sorry, this should have not happened and is probably a problem on our side. Please, report the issue to Scout's customer service.`
           );
         });
       });
@@ -237,7 +237,7 @@ describe('GMailAPI', () => {
       describe(`for an unrecognized error`, () => {
         let error = undefined;
 
-        it('should humanize the error', () => {
+        it("should humanize the error", () => {
           const result = gmailApi.humanizeError(error);
           expect(result.title).toEqual(`Unknown error`);
         });
@@ -245,91 +245,91 @@ describe('GMailAPI', () => {
     });
   });
 
-  describe('API endpoints', () => {
-    describe('startThread', () => {
-      it('should trigger gmail.users.messages.send without thread id', async () => {
+  describe("API endpoints", () => {
+    describe("startThread", () => {
+      it("should trigger gmail.users.messages.send without thread id", async () => {
         const payload = {
           raw: {},
         } as GMailAPI.UsersMessagesSendPayload;
 
         const response = await gmailApi.startThread({
           auth: {
-            accessToken: '123',
-            refreshToken: 'ref-token',
+            accessToken: "123",
+            refreshToken: "ref-token",
           },
           pathParams: {
-            userId: 'me',
+            userId: "me",
           },
           payload,
         });
 
         expect(gmailClient.users.messages.send).toHaveBeenCalledWith(
           expect.objectContaining({
-            userId: 'me',
+            userId: "me",
             requestBody: payload,
-          }),
+          })
         );
         expect(response.status).toBe(200);
       });
     });
 
-    describe('replyToThread', () => {
-      it('should trigger gmail.users.messages.send with the thread id', async () => {
+    describe("replyToThread", () => {
+      it("should trigger gmail.users.messages.send with the thread id", async () => {
         const payload = {
           raw: {},
-          threadId: '4456',
+          threadId: "4456",
         } as GMailAPI.UsersMessagesReplyToThreadPayload;
 
         const response = await gmailApi.replyToThread({
           auth: {
-            accessToken: '123',
-            refreshToken: 'ref-token',
+            accessToken: "123",
+            refreshToken: "ref-token",
           },
           pathParams: {
-            userId: 'me',
+            userId: "me",
           },
           payload,
         });
 
         expect(gmailClient.users.messages.send).toHaveBeenCalledWith(
           expect.objectContaining({
-            userId: 'me',
+            userId: "me",
             requestBody: payload,
-          }),
+          })
         );
         expect(response.status).toBe(200);
       });
     });
 
-    describe('watch', () => {
-      it('should trigger gmail.users.watch', async () => {
+    describe("watch", () => {
+      it("should trigger gmail.users.watch", async () => {
         const payload = {
-          labelFilterBehavior: 'include',
+          labelFilterBehavior: "include",
           topicName: `mock-topic`,
         } as GMailAPI.UsersWatchPayload;
 
         const response = await gmailApi.watch({
           auth: {
-            accessToken: '123',
-            refreshToken: 'ref-token',
+            accessToken: "123",
+            refreshToken: "ref-token",
           },
           pathParams: {
-            userId: 'me',
+            userId: "me",
           },
           payload,
         });
 
         expect(gmailClient.users.watch).toHaveBeenCalledWith(
           expect.objectContaining({
-            userId: 'me',
+            userId: "me",
             ...payload,
-          }),
+          })
         );
         expect(response.status).toBe(200);
       });
     });
 
-    describe('thread', () => {
+    describe("thread", () => {
       beforeEach(() => {
         const message = () => {
           return {
@@ -337,13 +337,13 @@ describe('GMailAPI', () => {
             payload: {
               parts: [
                 {
-                  mimeType: 'text/plain',
+                  mimeType: "text/plain",
                   body: {
                     data: `Part 1`,
                   },
                 },
                 {
-                  mimeType: 'text/plain',
+                  mimeType: "text/plain",
                   body: {
                     data: `Part 2`,
                   },
@@ -351,8 +351,8 @@ describe('GMailAPI', () => {
               ],
               headers: [
                 {
-                  name: 'From',
-                  value: 'Artur <test@example.com>',
+                  name: "From",
+                  value: "Artur <test@example.com>",
                 },
               ],
             },
@@ -368,99 +368,99 @@ describe('GMailAPI', () => {
         });
       });
 
-      it('should trigger gmail.users.threads.get', async () => {
+      it("should trigger gmail.users.threads.get", async () => {
         const response = await gmailApi.thread({
           auth: {
-            accessToken: '123',
-            refreshToken: 'ref-token',
+            accessToken: "123",
+            refreshToken: "ref-token",
           },
           pathParams: {
-            userId: 'me',
-            threadId: '456',
+            userId: "me",
+            threadId: "456",
           },
         });
 
         expect(gmailClient.users.threads.get).toHaveBeenCalledWith(
           expect.objectContaining({
-            userId: 'me',
-            id: '456',
-          }),
+            userId: "me",
+            id: "456",
+          })
         );
 
         console.log(response.data);
 
         expect(response.status).toBe(200);
         expect(response.data.messages.length).toBe(2);
-        expect(response.data.messages[0].email).toBe('test@example.com');
+        expect(response.data.messages[0].email).toBe("test@example.com");
       });
     });
 
-    describe('message', () => {
-      it('should trigger gmail.users.messages.get', async () => {
+    describe("message", () => {
+      it("should trigger gmail.users.messages.get", async () => {
         const response = await gmailApi.message({
           auth: {
-            accessToken: '123',
-            refreshToken: 'ref-token',
+            accessToken: "123",
+            refreshToken: "ref-token",
           },
           pathParams: {
-            userId: 'me',
-            messageId: '456',
+            userId: "me",
+            messageId: "456",
           },
         });
 
         expect(gmailClient.users.messages.get).toHaveBeenCalledWith(
           expect.objectContaining({
-            userId: 'me',
-            id: '456',
-          }),
+            userId: "me",
+            id: "456",
+          })
         );
         expect(response.status).toBe(200);
       });
     });
 
-    describe('historyList', () => {
-      it('should trigger gmail.users.history.list', async () => {
+    describe("historyList", () => {
+      it("should trigger gmail.users.history.list", async () => {
         const response = await gmailApi.historyList({
           auth: {
-            accessToken: '123',
-            refreshToken: 'ref-token',
+            accessToken: "123",
+            refreshToken: "ref-token",
           },
           pathParams: {
-            userId: 'me',
+            userId: "me",
           },
           query: {
             startHistoryId: `789`,
-            historyTypes: ['messageAdded'],
+            historyTypes: ["messageAdded"],
           },
         });
 
         expect(gmailClient.users.history.list).toHaveBeenCalledWith(
           expect.objectContaining({
-            userId: 'me',
+            userId: "me",
             startHistoryId: `789`,
-            historyTypes: ['messageAdded'],
-          }),
+            historyTypes: ["messageAdded"],
+          })
         );
         expect(response.status).toBe(200);
       });
     });
 
-    describe('stop', () => {
-      it('should trigger gmail.users.stop', async () => {
+    describe("stop", () => {
+      it("should trigger gmail.users.stop", async () => {
         const response = await gmailApi.stop({
           auth: {
-            accessToken: '123',
-            refreshToken: 'ref-token',
+            accessToken: "123",
+            refreshToken: "ref-token",
           },
           pathParams: {
-            userId: 'me',
+            userId: "me",
           },
         });
 
         expect(gmailClient.users.stop).toHaveBeenCalledWith(
           expect.objectContaining({
-            userId: 'me',
-          }),
+            userId: "me",
+          })
         );
         expect(response.status).toBe(200);
       });

@@ -1,7 +1,7 @@
-import { InvalidAuthParams } from '../exceptions';
-import { RemoteAPI } from '../remote-api';
-import { APICall } from '../types';
-import { AuthStrategy, AuthStrategyParams } from './auth.strategy';
+import { InvalidAuthParams } from "../exceptions";
+import { Pluggable } from "../remote-api";
+import { APICall } from "../types";
+import { AuthStrategy, AuthStrategyParams } from "./auth.strategy";
 
 export type BearerTokenAuthParams = {
   accessToken: string;
@@ -23,8 +23,8 @@ export class BearerTokenAuthStrategy extends AuthStrategy {
   }
 
   execute<PayloadType, ResponseType>(
-    apiService: RemoteAPI,
-    apiCall: APICall<PayloadType, ResponseType>,
+    apiService: Pluggable,
+    apiCall: APICall<PayloadType, ResponseType>
   ) {
     const auth = apiCall.request.auth as BearerTokenAuthParams;
 
@@ -37,7 +37,7 @@ export class BearerTokenAuthStrategy extends AuthStrategy {
         apiService,
         this,
         apiCall,
-        `No access token provided for API request ${apiService.constructor.name}.${apiCall.endpoint.name}. Make sure access token is provided in apiCall.request.auth.accessToken.`,
+        `No access token provided for API request ${apiService.constructor.name}.${apiCall.endpoint.name}. Make sure access token is provided in apiCall.request.auth.accessToken.`
       );
     }
 

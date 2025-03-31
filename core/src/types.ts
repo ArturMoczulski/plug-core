@@ -1,15 +1,14 @@
 // types.ts
 
-import { AxiosError, AxiosResponse } from 'axios';
-import { AuthStrategy } from './auth/auth.strategy';
-import { BearerTokenAuthParams } from './auth/bearer-token-auth.strategy';
-import { RemoteAPI } from './remote-api';
+import { AxiosResponse } from "axios";
+import { AuthStrategy } from "./auth/auth.strategy";
+import { Pluggable } from "./pluggable";
 
 export enum HTTPMethods {
-  GET = 'GET',
-  POST = 'POST',
-  PATCH = 'PATCH',
-  DELETE = 'DELETE',
+  GET = "GET",
+  POST = "POST",
+  PATCH = "PATCH",
+  DELETE = "DELETE",
 }
 
 export type Endpoint<Payload = undefined, Response = any> = {
@@ -26,9 +25,9 @@ export type Endpoint<Payload = undefined, Response = any> = {
   normalizationMapping?:
     | Record<string, string>
     | ((
-        api: RemoteAPI,
+        api: Pluggable,
         params: EndpointCallParams,
-        payload: any,
+        payload: any
       ) => Record<string, any>);
 
   // endpoint-scoped rate limits curently not yet supported
@@ -39,10 +38,10 @@ export type Endpoint<Payload = undefined, Response = any> = {
 export type EndpointsRegistry = Record<string, Endpoint>;
 
 export enum EndpointEventTypes {
-  BEFORE = 'before',
-  AFTER = 'after',
-  SUCCESS = 'success',
-  ERROR = 'error',
+  BEFORE = "before",
+  AFTER = "after",
+  SUCCESS = "success",
+  ERROR = "error",
 }
 
 export type RateLimit = {
@@ -67,13 +66,12 @@ export class APICall<
        */
       auth?: AuthParamsType;
       payload?: PayloadType;
-    },
+    }
   ) {}
 
   public response: AxiosResponse<ResponseType, any>;
 
   public toString() {
-
     return (
       `${this.endpoint.name}: ${this.endpoint.method} ${this.endpoint.url}` +
       (this.endpoint.url != this.request.url
@@ -83,30 +81,30 @@ export class APICall<
         ? `\nQuery: ${
             this.request.query
               ? JSON.stringify(this.request.query, null, 2)
-              : 'N/A'
+              : "N/A"
           }`
-        : '') +
+        : "") +
       (this.request.headers
         ? `\nHeaders: ${
             this.request.headers
               ? JSON.stringify(this.request.headers, null, 2)
-              : 'N/A'
+              : "N/A"
           }`
-        : '') +
+        : "") +
       (this.request.payload
         ? `\nPayload: ${
             this.request.payload
               ? JSON.stringify(this.request.payload, null, 2)
-              : 'N/A'
+              : "N/A"
           }`
-        : '') +
+        : "") +
       (this.response
         ? `\nResponse: ${this.response.status} ${this.response.statusText}\n${
             this.response.data
               ? JSON.stringify(this.response.data, null, 2)
-              : 'N/A'
+              : "N/A"
           }`
-        : '')
+        : "")
     );
   }
 }
@@ -144,7 +142,7 @@ export type GuardedEndpointCallParams<
 
 // Type Guard to check if params include auth
 export function isGuarded(
-  params: EndpointCallParams,
+  params: EndpointCallParams
 ): params is GuardedEndpointCallParams {
   return (params as GuardedEndpointCallParams).auth !== undefined;
 }
@@ -164,7 +162,7 @@ export function defineEndpoint<Payload = undefined, Response = any>(config: {
   // Extract all path parameters from the URL
   while ((match = pathParamRegex.exec(config.url)) !== null) {
     const paramName = match[1];
-    pathParams[paramName] = 'string'; // Assuming all path params are strings. Adjust as needed.
+    pathParams[paramName] = "string"; // Assuming all path params are strings. Adjust as needed.
   }
 
   return {

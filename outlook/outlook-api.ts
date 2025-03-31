@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { AxiosError, AxiosResponse } from 'axios';
-import { EmailAccount } from '../../../prismaGenerated';
+import { Injectable } from "@nestjs/common";
+import { AxiosError, AxiosResponse } from "axios";
+import { EmailAccount } from "../../../api/src/prismaGenerated";
 import {
   IEmailManagementAPI,
   IOAuthAPI,
@@ -8,22 +8,22 @@ import {
   Message,
   SendProspectEmailParams,
   Thread,
-} from '../../../prospect-email-sending/providers/prospect-email-sending-provider';
-import { AuthStrategy } from '../auth/auth.strategy';
+} from "../../../api/src/prospect-email-sending/providers/prospect-email-sending-provider";
+import { AuthStrategy } from "../core/auth/auth.strategy";
 import {
   AccessTokenResponse,
   RefreshableBearerTokenAuthStrategy,
-} from '../auth/refreshable-bearer-token-auth.strategy';
-import { Auth, Delete, Get, Headers, Normalize, Post } from '../decorators';
-import { AuthenticationFailed } from '../exceptions';
-import { RemoteAPI } from '../remote-api';
+} from "../core/auth/refreshable-bearer-token-auth.strategy";
+import { Auth, Delete, Get, Headers, Normalize, Post } from "../decorators";
+import { AuthenticationFailed } from "../exceptions";
+import { RemoteAPI } from "../remote-api";
 import {
   APICall,
   EndpointEventParams,
   GuardedEndpointCallParams,
   PublicEndpointCallParams,
-} from '../types';
-import { HumanizedError } from './../remote-api';
+} from "../types";
+import { HumanizedError } from "../remote-api";
 
 @Injectable()
 export class OutlookAPI
@@ -36,16 +36,16 @@ export class OutlookAPI
   static authUrl(state: string): string {
     const CLIENT_ID = process.env.SCOUT_API_OUTLOOK_CLIENT_ID;
     const SCOPES = [
-      'Mail.Send',
-      'Mail.Read',
-      'Mail.ReadWrite',
-      'offline_access',
-      'User.Read',
-    ].join(' ');
+      "Mail.Send",
+      "Mail.Read",
+      "Mail.ReadWrite",
+      "offline_access",
+      "User.Read",
+    ].join(" ");
     const REDIRECT_URI = OutlookAPI.redirectUrl();
 
     const authUrl =
-      'https://login.microsoftonline.com/common/oauth2/v2.0/authorize' +
+      "https://login.microsoftonline.com/common/oauth2/v2.0/authorize" +
       `?client_id=${encodeURIComponent(CLIENT_ID)}` + // app's client ID
       `&scope=${encodeURIComponent(SCOPES)}` + // scopes being requested by the app
       `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` + // where to send the user after the consent page
@@ -123,7 +123,7 @@ export class OutlookAPI
    */
   override defaultHeaders(): Record<string, string> {
     return {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
   }
 
@@ -135,17 +135,17 @@ export class OutlookAPI
    */
   isAccessTokenExpiredError(apiCall: any, error: any) {
     return (
-      error.response?.data?.error?.code == 'InvalidAuthenticationToken' ||
-      error.response?.data?.error == 'invalid_grant'
+      error.response?.data?.error?.code == "InvalidAuthenticationToken" ||
+      error.response?.data?.error == "invalid_grant"
     );
   }
 
   /**
    * Send Mail Endpoint
    */
-  @Post<void, OutlookAPI.SendMailParams>('/me/sendMail')
+  @Post<void, OutlookAPI.SendMailParams>("/me/sendMail")
   async startThread(
-    params: OutlookAPI.SendMailParams,
+    params: OutlookAPI.SendMailParams
   ): Promise<AxiosResponse<void>> {
     // The actual implementation is handled by the decorator
     return;
@@ -155,10 +155,10 @@ export class OutlookAPI
    * Delete Subscription Endpoint
    */
   @Delete<void, OutlookAPI.DeleteSubscriptionParams>(
-    '/subscriptions/:subscriptionId',
+    "/subscriptions/:subscriptionId"
   )
   async deleteSubscription(
-    params: OutlookAPI.DeleteSubscriptionParams,
+    params: OutlookAPI.DeleteSubscriptionParams
   ): Promise<AxiosResponse> {
     // Implementation handled by the decorator
     return;
@@ -167,19 +167,19 @@ export class OutlookAPI
   /**
    * Refresh Access Token Endpoint
    */
-  @Post('https://login.microsoftonline.com/common/oauth2/v2.0/token')
+  @Post("https://login.microsoftonline.com/common/oauth2/v2.0/token")
   @Auth(AuthStrategy.Type.NONE)
   @Headers({
-    'Content-Type': 'application/x-www-form-urlencoded',
+    "Content-Type": "application/x-www-form-urlencoded",
   })
   @Normalize({
-    accessToken: 'access_token',
-    refreshToken: 'refresh_token',
-    expiresIn: 'expires_in',
-    tokenType: 'token_type',
+    accessToken: "access_token",
+    refreshToken: "refresh_token",
+    expiresIn: "expires_in",
+    tokenType: "token_type",
   })
   async token(
-    params: OutlookAPI.TokenParams,
+    params: OutlookAPI.TokenParams
   ): Promise<AxiosResponse<AccessTokenResponse>> {
     // Implementation handled by the decorator
     return;
@@ -188,9 +188,9 @@ export class OutlookAPI
   /**
    * Reauthorize subscription Endpoint
    */
-  @Post('https://graph.microsoft.com/beta/subscriptions/:subscriptionId')
+  @Post("https://graph.microsoft.com/beta/subscriptions/:subscriptionId")
   async reauthorizeSubscription(
-    params: OutlookAPI.ReauthorizeSubscriptionParams,
+    params: OutlookAPI.ReauthorizeSubscriptionParams
   ): Promise<AxiosResponse<void>> {
     // Implementation handled by the decorator
     return;
@@ -199,9 +199,9 @@ export class OutlookAPI
   /**
    * Reply to Thread Endpoint
    */
-  @Post<void, OutlookAPI.ReplyToThreadParams>('/me/messages/:messageId/reply')
+  @Post<void, OutlookAPI.ReplyToThreadParams>("/me/messages/:messageId/reply")
   async replyToThread(
-    params: OutlookAPI.ReplyToThreadParams,
+    params: OutlookAPI.ReplyToThreadParams
   ): Promise<AxiosResponse<void>> {
     // Implementation handled by the decorator
     return;
@@ -210,9 +210,9 @@ export class OutlookAPI
   /**
    * Me Endpoint
    */
-  @Get<OutlookAPI.MeResponse>('/me')
+  @Get<OutlookAPI.MeResponse>("/me")
   async me(
-    params: OutlookAPI.MeParams,
+    params: OutlookAPI.MeParams
   ): Promise<AxiosResponse<OutlookAPI.MeResponse>> {
     // Implementation handled by the decorator
     return;
@@ -221,9 +221,9 @@ export class OutlookAPI
   /**
    * Inbox Endpoint
    */
-  @Get<OutlookAPI.MailFolderResponse>('/me/mailFolders/:folderId')
+  @Get<OutlookAPI.MailFolderResponse>("/me/mailFolders/:folderId")
   async mailFolder(
-    params: OutlookAPI.MailFolderParams,
+    params: OutlookAPI.MailFolderParams
   ): Promise<AxiosResponse<OutlookAPI.MailFolderResponse>> {
     // Implementation handled by the decorator
     return;
@@ -233,13 +233,13 @@ export class OutlookAPI
    * Get Message Details Endpoint
    */
   @Get<OutlookAPI.OutlookMessage, OutlookAPI.MessageParams>(
-    '/users/:userId/messages/:messageId',
+    "/users/:userId/messages/:messageId"
   )
   @Headers({
     Prefer: 'outlook.body-content-type="text"',
   })
   async message(
-    params: OutlookAPI.MessageParams,
+    params: OutlookAPI.MessageParams
   ): Promise<AxiosResponse<OutlookAPI.OutlookMessage>> {
     // Implementation handled by the decorator
     return;
@@ -249,17 +249,17 @@ export class OutlookAPI
    * Get Messages Endpoint
    */
   @Get<OutlookAPI.GetMessagesResponse, OutlookAPI.GetMessagesParams>(
-    '/me/messages',
+    "/me/messages"
   )
   async getMessages(
-    params: OutlookAPI.GetMessagesParams,
+    params: OutlookAPI.GetMessagesParams
   ): Promise<AxiosResponse<OutlookAPI.GetMessagesResponse>> {
     // Implementation handled by the decorator
     return;
   }
 
   async thread(
-    params: OutlookAPI.ThreadParams,
+    params: OutlookAPI.ThreadParams
   ): Promise<AxiosResponse<Thread>> {
     const response = (await this.getMessages({
       ...params,
@@ -276,9 +276,9 @@ export class OutlookAPI
   /**
    * Create Subscription Endpoint
    */
-  @Post('/subscriptions')
+  @Post("/subscriptions")
   async createSubscription(
-    params: OutlookAPI.CreateSubscriptionParams,
+    params: OutlookAPI.CreateSubscriptionParams
   ): Promise<AxiosResponse<OutlookAPI.CreateSubscriptionResponse>> {
     // Implementation handled by the decorator
     return;
@@ -287,9 +287,9 @@ export class OutlookAPI
   /**
    * Get Subscriptions Endpoint
    */
-  @Get('/subscriptions')
+  @Get("/subscriptions")
   async getSubscriptions(
-    params: OutlookAPI.GetSubscriptionsParams,
+    params: OutlookAPI.GetSubscriptionsParams
   ): Promise<AxiosResponse<OutlookAPI.GetSubscriptionsResponse>> {
     // Implementation handled by the decorator
     return;
@@ -303,7 +303,7 @@ export class OutlookAPI
     endpointParams: PublicEndpointCallParams,
     authStrategy: AuthStrategy,
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: any,
+    error: any
   ): boolean {
     if (
       error.response?.data?.error == `invalid_grant` &&
@@ -325,7 +325,7 @@ export class OutlookAPI
         endpointParams,
         apiCall,
         error,
-        `Authentication failed: ${error.response.data.error_description}`,
+        `Authentication failed: ${error.response.data.error_description}`
       );
     } else if (
       error.response?.data?.error == `invalid_grant` &&
@@ -347,7 +347,7 @@ export class OutlookAPI
         endpointParams,
         apiCall,
         error,
-        `Authentication failed: ${error.response.data.error_description}`,
+        `Authentication failed: ${error.response.data.error_description}`
       );
     } else if (
       error.response?.data?.error == `invalid_grant` &&
@@ -369,7 +369,7 @@ export class OutlookAPI
         endpointParams,
         apiCall,
         error,
-        `Authentication failed: ${error.response.data.error_description}`,
+        `Authentication failed: ${error.response.data.error_description}`
       );
     } else if (
       error.response?.data?.error == `invalid_grant` &&
@@ -391,7 +391,7 @@ export class OutlookAPI
         endpointParams,
         apiCall,
         error,
-        `Authentication failed: ${error.response.data.error_description}`,
+        `Authentication failed: ${error.response.data.error_description}`
       );
     } else if (
       error.response?.data?.error == `invalid_grant` &&
@@ -413,7 +413,7 @@ export class OutlookAPI
         endpointParams,
         apiCall,
         error,
-        `Authentication failed: ${error.response.data.error_description}`,
+        `Authentication failed: ${error.response.data.error_description}`
       );
     }
 
@@ -422,7 +422,7 @@ export class OutlookAPI
 
   isAuthError<PayloadType, ResponseType, AuthParamsType>(
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    axiosError: AxiosError<{ error: { code: string; message: string } }>,
+    axiosError: AxiosError<{ error: { code: string; message: string } }>
   ): boolean {
     if (
       axiosError.response.data.error.code == `InvalidAuthenticationToken` ||
@@ -437,7 +437,7 @@ export class OutlookAPI
     authStrategy: RefreshableBearerTokenAuthStrategy,
     endpointParams: PublicEndpointCallParams,
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    axiosError: AxiosError<{ error: { code: string; message: string } }>,
+    axiosError: AxiosError<{ error: { code: string; message: string } }>
   ): boolean {
     throw new AuthenticationFailed(
       apiService,
@@ -445,7 +445,7 @@ export class OutlookAPI
       endpointParams,
       apiCall,
       axiosError,
-      `Authentication failed: ${axiosError.response.data.error.message}`,
+      `Authentication failed: ${axiosError.response.data.error.message}`
     );
   }
 
@@ -454,7 +454,7 @@ export class OutlookAPI
       return {
         title: `Email account access denied`,
         detail: `Looks like your email account authorization is expired or was never established. Please, reconnect your email account. Here is a message from your email provider: ${
-          error.error?.response?.data?.error_description || ''
+          error.error?.response?.data?.error_description || ""
         }`,
       };
     }
@@ -463,7 +463,7 @@ export class OutlookAPI
   }
 
   protected static normalizeThreadMessages(
-    messages: OutlookAPI.EmailMessage[],
+    messages: OutlookAPI.EmailMessage[]
   ): Thread {
     return {
       messages: messages.map((msg: any) => {
@@ -489,19 +489,19 @@ export class OutlookAPI
 
   protected static removeNestedReplies(text) {
     const nestedReplyPattern = /On\s.*?\swrote:.*?(?=(On\s.*?\swrote:|$))/gs;
-    return text.replace(nestedReplyPattern, '');
+    return text.replace(nestedReplyPattern, "");
   }
 
   protected static removeQuotedText(text) {
-    return text.replace(/^>.*$/gm, ''); // Simple quoted text remover
+    return text.replace(/^>.*$/gm, ""); // Simple quoted text remover
   }
 
   protected static removeBrAtEnd(text) {
-    return text.replace(/<br>\s*$/, '');
+    return text.replace(/<br>\s*$/, "");
   }
 
   protected static removeSignature(text) {
-    const signatureIndex = text.indexOf('\n--\n');
+    const signatureIndex = text.indexOf("\n--\n");
     if (signatureIndex !== -1) {
       return text.substring(0, signatureIndex);
     }
@@ -511,7 +511,7 @@ export class OutlookAPI
   protected static stripHtmlTags(html) {
     return html.replace(
       /<(?!br\s*\/?|\/br|a\s|\/a|b\s|\/b|ul\s|\/ul|ol\s|\/ol|p\s|\/p)[^>]+>/gi,
-      '',
+      ""
     );
   }
 }
@@ -534,8 +534,8 @@ export namespace OutlookAPI {
   };
 
   export enum EmailBodyContentType {
-    HTML = 'HTML',
-    TEXT = 'Text',
+    HTML = "HTML",
+    TEXT = "Text",
   }
 
   export type EmailBody = {
@@ -555,7 +555,7 @@ export namespace OutlookAPI {
 
   export interface GetMessagesResponse {
     value: EmailMessage[];
-    '@odata.context': string;
+    "@odata.context": string;
   }
 
   export interface EmailMessage {
@@ -597,7 +597,7 @@ export namespace OutlookAPI {
     client_id: string;
     client_secret: string;
     scope?: string;
-    grant_type: 'refresh_token' | string; // Typically 'refresh_token'
+    grant_type: "refresh_token" | string; // Typically 'refresh_token'
     refresh_token?: string;
     redirect_uri?: string;
     code?: string;
@@ -640,7 +640,7 @@ export namespace OutlookAPI {
       undefined, // overwrite query params to make them required
       never // payload
     >,
-    'query'
+    "query"
   > & {
     query: {
       account_id: string;
@@ -662,7 +662,7 @@ export namespace OutlookAPI {
       void,
       any
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       subscriptionId: string;
@@ -687,7 +687,7 @@ export namespace OutlookAPI {
       OutlookAPI.ReplyToThreadPayload, // body payload
       Partial<SendProspectEmailParams> // context
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: { messageId: string }; // path params
   };
@@ -718,12 +718,12 @@ export namespace OutlookAPI {
 
   export type CreateSubscriptionResponse = {
     id: string;
-    changeType: 'created';
+    changeType: "created";
     notificationUrl: string;
     resource: string;
     includeResourceData: boolean;
     encryptionCertificate: string;
-    encryptionCertificateId: 'scout-new-key';
+    encryptionCertificateId: "scout-new-key";
     expirationDateTime;
     clientState: string;
     lifecycleNotificationUrl: string;
@@ -737,7 +737,7 @@ export namespace OutlookAPI {
 
   export type GetSubscriptionsResponse = {
     value: Subscription[];
-    '@odata.nextLink'?: string;
+    "@odata.nextLink"?: string;
   };
 
   export type TokenParams = PublicEndpointCallParams<
@@ -795,7 +795,7 @@ export namespace OutlookAPI {
       never,
       any
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       userId: string;
@@ -811,7 +811,7 @@ export namespace OutlookAPI {
         expirationDateTime: string;
       }
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       subscriptionId: string;

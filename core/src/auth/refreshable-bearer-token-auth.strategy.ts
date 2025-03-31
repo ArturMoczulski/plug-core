@@ -1,13 +1,13 @@
-import { AxiosResponse } from 'axios';
-import { RetryAPICall } from '../exceptions';
-import { RemoteAPI } from '../remote-api';
+import { AxiosResponse } from "axios";
+import { RetryAPICall } from "../exceptions";
+import { Pluggable } from "../remote-api";
 import {
   APICall,
   EndpointCallParams,
   GuardedEndpointCallParams,
-} from '../types';
-import { AuthStrategy, AuthStrategyParams } from './auth.strategy';
-import { BearerTokenAuthStrategy } from './bearer-token-auth.strategy';
+} from "../types";
+import { AuthStrategy, AuthStrategyParams } from "./auth.strategy";
+import { BearerTokenAuthStrategy } from "./bearer-token-auth.strategy";
 
 export type RefreshableBearerTokenAuthStrategyParams<
   RefreshAccessTokensParamsType,
@@ -21,7 +21,7 @@ export type RefreshableBearerTokenAuthStrategyParams<
    * Function to request a new access token
    */
   refreshAccessToken: (
-    params: RefreshAccessTokensParamsType,
+    params: RefreshAccessTokensParamsType
   ) => Promise<AxiosResponse<AccessTokenResponse>>;
 };
 
@@ -48,21 +48,21 @@ export class RefreshableBearerTokenAuthStrategy<
    */
   public isAccessTokenExpiredError: <PayloadType, ResponseType, AuthParamsType>(
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: any,
+    error: any
   ) => boolean;
 
   /**
    * Function to request a new access token
    */
   public refreshAccessToken: (
-    params: RefreshAccessTokensParamsType,
+    params: RefreshAccessTokensParamsType
   ) => Promise<AxiosResponse<AccessTokenResponse>>;
 
   /**
    * @param params - Extended parameters including auth error detection and token refresh functions
    */
   constructor(
-    params: RefreshableBearerTokenAuthStrategyParams<RefreshAccessTokensParamsType>,
+    params: RefreshableBearerTokenAuthStrategyParams<RefreshAccessTokensParamsType>
   ) {
     super({
       isAuthError: params.isAuthError,
@@ -74,7 +74,7 @@ export class RefreshableBearerTokenAuthStrategy<
   }
 
   public buildRefreshAccessTokenPayload: (
-    callParams: GuardedEndpointCallParams,
+    callParams: GuardedEndpointCallParams
   ) => any;
   /**w
    * Overrides the onApiError method to handle access token expiration.
@@ -88,15 +88,15 @@ export class RefreshableBearerTokenAuthStrategy<
     ResponseType = undefined,
     AuthParamsType = undefined,
   >(
-    apiService: RemoteAPI,
+    apiService: Pluggable,
     callParams: EndpointCallParams,
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: any,
+    error: any
   ): Promise<boolean> {
     if (this.isAccessTokenExpiredError(apiCall, error)) {
-      if (typeof this.buildRefreshAccessTokenPayload !== 'function') {
+      if (typeof this.buildRefreshAccessTokenPayload !== "function") {
         throw new Error(
-          'buildRefreshAccessTokenPayload not provided. Make sure to provide a function that returns the payload for the refresh access token request',
+          "buildRefreshAccessTokenPayload not provided. Make sure to provide a function that returns the payload for the refresh access token request"
         );
       }
       const originalPayload = callParams.payload as any;
@@ -105,7 +105,7 @@ export class RefreshableBearerTokenAuthStrategy<
 
       const newTokens = (
         await this.refreshAccessToken(
-          callParams as RefreshAccessTokensParamsType,
+          callParams as RefreshAccessTokensParamsType
         )
       ).data;
 
@@ -127,7 +127,7 @@ export class RefreshableBearerTokenAuthStrategy<
           },
           payload: originalPayload,
         },
-        this,
+        this
       );
 
       // Trigger retry

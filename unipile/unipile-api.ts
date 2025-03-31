@@ -1,23 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { AxiosError, AxiosResponse } from 'axios';
-import { EmailAccount } from '../../../prismaGenerated';
+import { Injectable } from "@nestjs/common";
+import { AxiosError, AxiosResponse } from "axios";
+import { EmailAccount } from "../../../api/src/prismaGenerated";
 import {
   ISendEmailRemoteAPI,
   SendEmailResult,
   SendProspectEmailParams,
-} from '../../../prospect-email-sending/providers/prospect-email-sending-provider';
-import { AuthStrategy } from '../auth/auth.strategy';
-import { AccessTokenResponse } from '../auth/refreshable-bearer-token-auth.strategy';
-import { UnipileCustomAuthAuthStrategy } from '../auth/unipile-custom-auth.strategy';
-import { Get, Normalize, Post } from '../decorators';
-import { AuthenticationFailed } from '../exceptions';
-import { HumanizedError, RemoteAPI } from '../remote-api';
+} from "../../../api/src/prospect-email-sending/providers/prospect-email-sending-provider";
+import { AuthStrategy } from "../core/auth/auth.strategy";
+import { AccessTokenResponse } from "../core/auth/refreshable-bearer-token-auth.strategy";
+import { UnipileCustomAuthAuthStrategy } from "../core/auth/unipile-custom-auth.strategy";
+import { Get, Normalize, Post } from "../decorators";
+import { AuthenticationFailed } from "../exceptions";
+import { HumanizedError, RemoteAPI } from "../remote-api";
 import {
   APICall,
   EndpointEventParams,
   GuardedEndpointCallParams,
   PublicEndpointCallParams,
-} from '../types';
+} from "../types";
 
 @Injectable()
 export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
@@ -73,16 +73,16 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
       type: string;
       title: string;
       detail: string;
-    }>,
+    }>
   ): boolean {
     //@ts-ignore
-    if (axiosError.response?.message?.includes('timeout')) {
+    if (axiosError.response?.message?.includes("timeout")) {
       /** If axios times out, just return */
       return false;
     }
     if (
-      axiosError.response.data.type == 'errors/disconnected_account' ||
-      axiosError.response.data.title == 'Disconnected account'
+      axiosError.response.data.type == "errors/disconnected_account" ||
+      axiosError.response.data.title == "Disconnected account"
     ) {
       return true;
     }
@@ -98,7 +98,7 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
       type: string;
       title: string;
       detail: string;
-    }>,
+    }>
   ): boolean {
     throw new AuthenticationFailed(
       apiService,
@@ -106,7 +106,7 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
       endpointParams,
       apiCall,
       axiosError,
-      `Authentication failed: ${axiosError.response.data.title} - ${axiosError.response.data.detail}`,
+      `Authentication failed: ${axiosError.response.data.title} - ${axiosError.response.data.detail}`
     );
   }
   // override useAuthStrategies(): Partial<AuthStrategy[]> {
@@ -140,7 +140,7 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
    */
   override defaultHeaders(): Record<string, string> {
     return {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
   }
 
@@ -152,21 +152,21 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
    */
   isAccessTokenExpiredError(error: any) {
     return (
-      error.response?.data?.error?.code == 'InvalidAuthenticationToken' ||
-      error.response?.data?.error == 'invalid_grant'
+      error.response?.data?.error?.code == "InvalidAuthenticationToken" ||
+      error.response?.data?.error == "invalid_grant"
     );
   }
 
   /** This is used in the Linkedin Service "sendLinkedinMessage" function */
   @Post<UnipileAPI.StartNewChatReturnType, UnipileAPI.StartNewChatParams>(
-    '/chats',
+    "/chats"
   )
   @Normalize({
-    threadId: 'chat_id',
-    messageId: 'message_id',
+    threadId: "chat_id",
+    messageId: "message_id",
   })
   async startThread(
-    params: UnipileAPI.StartNewChatParams,
+    params: UnipileAPI.StartNewChatParams
   ): Promise<AxiosResponse<SendEmailResult>> {
     // The actual implementation is handled by the decorator
     return;
@@ -176,12 +176,12 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
   @Post<
     UnipileAPI.SendMessageInChatReturnType,
     UnipileAPI.SendMessageInChatParams
-  >('/chats/:chatId/messages')
+  >("/chats/:chatId/messages")
   @Normalize({
-    messageId: 'message_id',
+    messageId: "message_id",
   })
   async replyToThread(
-    params: UnipileAPI.SendMessageInChatParams,
+    params: UnipileAPI.SendMessageInChatParams
   ): Promise<AxiosResponse<SendEmailResult>> {
     // Implementation handled by the decorator
     return;
@@ -190,9 +190,9 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
   @Get<
     UnipileAPI.UserRelationsReturnType,
     UnipileAPI.UserRelationsParamsEndpoint
-  >('/users/relations')
+  >("/users/relations")
   async fetchLinkedinRelations(
-    params: UnipileAPI.UserRelationsParamsEndpoint,
+    params: UnipileAPI.UserRelationsParamsEndpoint
   ): Promise<AxiosResponse<UnipileAPI.UserRelationsReturnType>> {
     return;
   }
@@ -201,9 +201,9 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
   @Get<
     UnipileAPI.RetrieveLinkedinProfileReturnType,
     UnipileAPI.RetrieveLinkedinProfileEndpoint
-  >('/users/:linkedinId')
+  >("/users/:linkedinId")
   async retrieveLinkedinProfile(
-    params: UnipileAPI.RetrieveLinkedinProfileEndpoint,
+    params: UnipileAPI.RetrieveLinkedinProfileEndpoint
   ): Promise<AxiosResponse<UnipileAPI.RetrieveLinkedinProfileReturnType>> {
     return;
   }
@@ -212,9 +212,9 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
   @Get<
     UnipileAPI.RetriveUnipileAccountReturnType,
     UnipileAPI.RetrieveUnipileAccountEndpoint
-  >('/accounts/:accountId')
+  >("/accounts/:accountId")
   async retrieveUnipileAccount(
-    params: UnipileAPI.RetrieveUnipileAccountEndpoint,
+    params: UnipileAPI.RetrieveUnipileAccountEndpoint
   ): Promise<AxiosResponse<UnipileAPI.RetriveUnipileAccountReturnType>> {
     return;
   }
@@ -223,9 +223,9 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
   @Post<
     UnipileAPI.FetchLinkedinSearchReturnType,
     UnipileAPI.FetchLinkedinSearchEndpoint
-  >('/linkedin/search')
+  >("/linkedin/search")
   async fetchLinkedinSearch(
-    params: UnipileAPI.FetchLinkedinSearchEndpoint,
+    params: UnipileAPI.FetchLinkedinSearchEndpoint
   ): Promise<AxiosResponse<UnipileAPI.FetchLinkedinSearchReturnType>> {
     // The actual implementation is handled by the decorator
     return;
@@ -244,7 +244,7 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
 
       if (response?.data?.error?.message) {
         return {
-          title: '',
+          title: "",
           detail: response?.data?.error?.message,
         };
       } else {
@@ -255,16 +255,16 @@ export class UnipileAPI extends RemoteAPI implements ISendEmailRemoteAPI {
       }
     } else if (error instanceof Error) {
       return {
-        title: '',
+        title: "",
         detail: error.message,
       };
-    } else if (typeof error === 'string') {
+    } else if (typeof error === "string") {
       return {
-        title: '',
+        title: "",
         detail: error,
       };
     } else {
-      return { title: '', detail: 'Unknown error' };
+      return { title: "", detail: "Unknown error" };
     }
   }
 }
@@ -287,7 +287,7 @@ export namespace UnipileAPI {
   };
 
   export type EmailBody = {
-    contentType: 'HTML' | 'Text'; // Specifies the type of content
+    contentType: "HTML" | "Text"; // Specifies the type of content
     content: string; // The actual body content
   };
 
@@ -303,7 +303,7 @@ export namespace UnipileAPI {
 
   export interface GetMessagesResponse {
     value: EmailMessage[];
-    '@odata.context': string;
+    "@odata.context": string;
   }
 
   export interface EmailMessage {
@@ -345,7 +345,7 @@ export namespace UnipileAPI {
     client_id: string;
     client_secret: string;
     scope?: string;
-    grant_type: 'refresh_token' | string; // Typically 'refresh_token'
+    grant_type: "refresh_token" | string; // Typically 'refresh_token'
     refresh_token?: string;
     redirect_uri?: string;
     code?: string;
@@ -399,7 +399,7 @@ export namespace UnipileAPI {
       undefined, // body payload
       undefined // context
     >,
-    'queryParams'
+    "queryParams"
   > & {
     queryParams: {
       account_id: string;
@@ -416,24 +416,24 @@ export namespace UnipileAPI {
       undefined, // body payload
       undefined // context
     >,
-    'queryParams' | 'payload'
+    "queryParams" | "payload"
   > & {
     queryParams: {
       cursor?: string;
       limit: number;
     };
     payload: {
-      api: 'classic';
-      category: 'people';
+      api: "classic";
+      category: "people";
       url: string;
     };
   };
 
   export type FetchLinkedinSearchReturnType = {
-    object: 'LinkedinSearch';
+    object: "LinkedinSearch";
     items: {
-      object: 'SearchResult';
-      type: 'PEOPLE' | 'COMPANY' | 'POST' | 'JOB';
+      object: "SearchResult";
+      type: "PEOPLE" | "COMPANY" | "POST" | "JOB";
       id: string;
       // For PEOPLE
       public_identifier?: string;
@@ -445,7 +445,7 @@ export namespace UnipileAPI {
       name?: string;
       first_name?: string;
       last_name?: string;
-      network_distance?: 'SELF';
+      network_distance?: "SELF";
       location?: string;
       industry?: string;
       keywords_match?: string;
@@ -461,7 +461,7 @@ export namespace UnipileAPI {
       recently_hired?: boolean;
       mentioned_in_the_news?: boolean;
       last_outreach_activity?: {
-        type: 'SEND_MESSAGE';
+        type: "SEND_MESSAGE";
         performed_at: string;
       };
       current_positions?: {
@@ -522,7 +522,7 @@ export namespace UnipileAPI {
       headcount?: string;
 
       // For POST
-      provider?: 'LINKEDIN';
+      provider?: "LINKEDIN";
       social_id?: string;
       share_url?: string;
       title?: string;
@@ -568,7 +568,7 @@ export namespace UnipileAPI {
         mimetype: string;
         url: string;
         url_expires_at: number;
-        type: 'img' | 'video' | 'audio' | 'file' | 'linkedin_post';
+        type: "img" | "video" | "audio" | "file" | "linkedin_post";
         size?: {
           width: number;
           height: number;
@@ -645,7 +645,7 @@ export namespace UnipileAPI {
       undefined, // body payload
       undefined // context
     >,
-    'pathParams'
+    "pathParams"
   > & {
     pathParams: {
       accountId: string;
@@ -653,8 +653,8 @@ export namespace UnipileAPI {
   };
 
   export type RetriveUnipileAccountReturnType = {
-    object: 'Account';
-    type: 'MOBILE';
+    object: "Account";
+    type: "MOBILE";
     connection_params: {
       im: {
         phone_number: string;
@@ -688,7 +688,7 @@ export namespace UnipileAPI {
       undefined, // body payload
       undefined // context
     >,
-    'pathParams' | 'query'
+    "pathParams" | "query"
   > & {
     pathParams: {
       linkedinId: string;
@@ -741,8 +741,8 @@ export namespace UnipileAPI {
     is_relationship: boolean;
     is_self: boolean;
     invitation: {
-      type: 'SENT' | 'RECEIVED';
-      status: 'PENDING' | 'ACCEPTED' | 'DECLINED' | 'WITHDRAWN';
+      type: "SENT" | "RECEIVED";
+      status: "PENDING" | "ACCEPTED" | "DECLINED" | "WITHDRAWN";
     };
     work_experience: {
       position: string;
@@ -794,12 +794,12 @@ export namespace UnipileAPI {
     connections_count: number;
     shared_connections_count: number;
     network_distance:
-      | 'FIRST_DEGREE'
-      | 'SECOND_DEGREE'
-      | 'THIRD_DEGREE'
-      | 'OUTSIDE_NETWORK';
+      | "FIRST_DEGREE"
+      | "SECOND_DEGREE"
+      | "THIRD_DEGREE"
+      | "OUTSIDE_NETWORK";
     public_profile_url: string;
-    object: 'UserProfile';
+    object: "UserProfile";
   };
 
   export type StartNewChatParams = Omit<
@@ -809,15 +809,15 @@ export namespace UnipileAPI {
       never, // body payload
       Partial<SendProspectEmailParams> // context
     >,
-    'payload'
+    "payload"
   > & {
     payload: UnipileAPI.StartNewChatPayload;
   };
 
   export type StartNewChatReturnType = {
-    object: 'ChatStarted';
-    chat_id: 'string';
-    message_id: 'string';
+    object: "ChatStarted";
+    chat_id: "string";
+    message_id: "string";
   };
 
   export type DeleteSubscriptionParams = GuardedUnipileEndpointCallParams<
@@ -835,7 +835,7 @@ export namespace UnipileAPI {
       never, // body payload
       Partial<SendProspectEmailParams> // context
     >,
-    'pathParams' | 'payload'
+    "pathParams" | "payload"
   > & {
     pathParams: { chatId: string };
     payload: {
@@ -844,8 +844,8 @@ export namespace UnipileAPI {
   };
 
   export type SendMessageInChatReturnType = {
-    object: 'MessageSent';
-    message_id: 'string';
+    object: "MessageSent";
+    message_id: "string";
   };
 
   export type GetMessagesParams = GuardedUnipileEndpointCallParams<
@@ -864,12 +864,12 @@ export namespace UnipileAPI {
 
   export type CreateSubscriptionResponse = {
     id: string;
-    changeType: 'created';
+    changeType: "created";
     notificationUrl: string;
     resource: string;
     includeResourceData: boolean;
     encryptionCertificate: string;
-    encryptionCertificateId: 'scout-key';
+    encryptionCertificateId: "scout-key";
     expirationDateTime;
     clientState: string;
     lifecycleNotificationUrl: string;
@@ -883,7 +883,7 @@ export namespace UnipileAPI {
 
   export type GetSubscriptionsResponse = {
     value: Subscription[];
-    '@odata.nextLink'?: string;
+    "@odata.nextLink"?: string;
   };
 
   export type TokenParams = PublicEndpointCallParams<

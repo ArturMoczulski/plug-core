@@ -1,6 +1,6 @@
-import { AuthenticationFailed } from '../exceptions';
-import { RemoteAPI } from '../remote-api';
-import { APICall, PublicEndpointCallParams } from '../types';
+import { AuthenticationFailed } from "../exceptions";
+import { Pluggable } from "../pluggable";
+import { APICall, PublicEndpointCallParams } from "../types";
 
 export abstract class AuthStrategy {
   constructor(params?: AuthStrategyParams) {
@@ -13,32 +13,32 @@ export abstract class AuthStrategy {
   }
 
   abstract execute<PayloadType, ResponseType, AuthParamsType>(
-    apiService: RemoteAPI,
-    apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
+    apiService: Pluggable,
+    apiCall: APICall<PayloadType, ResponseType, AuthParamsType>
   ): APICall<PayloadType, ResponseType, AuthParamsType>;
 
   abstract type(): AuthStrategy.Type;
 
   public isAuthError<PayloadType, ResponseType, AuthParamsType>(
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: any,
+    error: any
   ) {
     return false;
   }
 
   public onAuthError<PayloadType, ResponseType, AuthParamsType>(
-    apiService: RemoteAPI,
+    apiService: Pluggable,
     authStrategy: AuthStrategy,
     endpointParams: PublicEndpointCallParams,
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: any,
+    error: any
   ): boolean {
     throw new AuthenticationFailed(
       apiService,
       this,
       endpointParams,
       apiCall,
-      error,
+      error
     );
   }
 
@@ -47,10 +47,10 @@ export abstract class AuthStrategy {
     ResponseType = undefined,
     AuthParamsType = undefined,
   >(
-    apiService: RemoteAPI,
+    apiService: Pluggable,
     endpointParams: PublicEndpointCallParams,
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: any,
+    error: any
   ): Promise<boolean> {
     if (this.isAuthError(apiCall, error)) {
       return this.onAuthError(apiService, this, endpointParams, apiCall, error);
@@ -63,20 +63,20 @@ export abstract class AuthStrategy {
 export type AuthStrategyParams = {
   isAuthError?: <PayloadType, ResponseType, AuthParamsType>(
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: any,
+    error: any
   ) => boolean;
   onAuthError?: <PayloadType, ResponseType, AuthParamsType>(
-    apiService: RemoteAPI,
+    apiService: Pluggable,
     authStrategy: AuthStrategy,
     endpointParams: PublicEndpointCallParams,
     apiCall: APICall<PayloadType, ResponseType, AuthParamsType>,
-    error: any,
+    error: any
   ) => boolean;
 };
 
 export namespace AuthStrategy {
   export enum Type {
-    NONE = 'NONE',
+    NONE = "NONE",
     /**
      * If bearer token is used, make sure to pass the
      * accessToken property in the auth object of
@@ -85,14 +85,14 @@ export namespace AuthStrategy {
      * Also implement isAuthError() and onAuthError()
      * methods in the API service.
      */
-    BEARER_TOKEN = 'BEARER_TOKEN',
+    BEARER_TOKEN = "BEARER_TOKEN",
     /**
      * Refreshable bearer tokens will require
      * additional logic to determine how to detect an
      * expired access token and how to refresh it
      */
-    REFRESHABLE_BEARER_TOKEN = 'REFRESHABLE_BEARER_TOKEN',
+    REFRESHABLE_BEARER_TOKEN = "REFRESHABLE_BEARER_TOKEN",
 
-    UNIPILE_CUSTOM_AUTH_BEARER_TOKEN = 'UNIPILE_CUSTOM_AUTH_BEARER_TOKEN',
+    UNIPILE_CUSTOM_AUTH_BEARER_TOKEN = "UNIPILE_CUSTOM_AUTH_BEARER_TOKEN",
   }
 }

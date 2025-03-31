@@ -1,0 +1,11 @@
+{
+  "name": "@plug/core",
+  "version": "1.0.0",
+  "description": "Plug into any API",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/ArturMoczulski/plug",
+  "author": "Artur Moczulski <artur.moczulski@gmail.com>",
+  "license": "MIT",
+  "private": false
+}
